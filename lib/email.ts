@@ -84,6 +84,10 @@ export async function sendReportEmails(payload: LeadPayload) {
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT ?? 587),
       secure: process.env.SMTP_SECURE === "true",
+      requireTLS: true,
+      tls: {
+        minVersion: "TLSv1.2"
+      },
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD
@@ -106,7 +110,10 @@ export async function sendReportEmails(payload: LeadPayload) {
       });
     }
 
-    return { sent: true, provider: "smtp" };
+    return {
+      sent: true,
+      provider: process.env.SMTP_HOST?.includes("mailersend") ? "mailersend-smtp" : "smtp"
+    };
   }
 
   if (!configured(process.env.RESEND_API_KEY)) {

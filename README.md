@@ -32,20 +32,32 @@ Copia `.env.example` in `.env.local` e compila i valori necessari.
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
-SMTP_HOST=smtp.gmail.com
+SMTP_HOST=smtp.mailersend.net
 SMTP_PORT=587
 SMTP_SECURE=false
-SMTP_USER=morettifabio70@gmail.com
+SMTP_USER=
 SMTP_PASSWORD=
-EMAIL_FROM=AI Act Readiness <morettifabio70@gmail.com>
-ADMIN_EMAIL=morettifabio70@gmail.com
+EMAIL_FROM=AI Act Readiness <info@fabiomoretti.com>
+ADMIN_EMAIL=info@fabiomoretti.com
 RESEND_API_KEY=
 KIT_BASE_URL=
 CONSULTATION_URL=
 COMPLIANCE_URL=
 ```
 
-Senza `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`, l'API restituisce un id locale e non persiste sul database. Per inviare email via Gmail, configura `SMTP_USER` e una password per app Google in `SMTP_PASSWORD`. Se SMTP non e configurato, puoi usare `RESEND_API_KEY` come fallback. I valori placeholder come `INSERISCI_QUI...` vengono ignorati e non bloccano la visualizzazione del report.
+Senza `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`, l'API restituisce un id locale e non persiste sul database. Per inviare email via MailerSend SMTP, verifica il dominio `fabiomoretti.com` in MailerSend, genera un utente SMTP dal dominio e configura `SMTP_USER` e `SMTP_PASSWORD`. Se SMTP non e configurato, puoi usare `RESEND_API_KEY` come fallback. I valori placeholder come `INSERISCI_QUI...` vengono ignorati e non bloccano la visualizzazione del report.
+
+### MailerSend SMTP
+
+MailerSend richiede:
+
+- `SMTP_HOST=smtp.mailersend.net`
+- `SMTP_PORT=587`
+- `SMTP_SECURE=false`, per usare STARTTLS sulla porta 587
+- `SMTP_USER` e `SMTP_PASSWORD` generati nella sezione SMTP del dominio verificato
+- `EMAIL_FROM=AI Act Readiness <info@fabiomoretti.com>`
+
+Il dominio mittente deve essere verificato in MailerSend prima di poter inviare da `info@fabiomoretti.com`.
 
 ## Database
 
