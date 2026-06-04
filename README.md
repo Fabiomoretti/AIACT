@@ -32,15 +32,20 @@ Copia `.env.example` in `.env.local` e compila i valori necessari.
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=morettifabio70@gmail.com
+SMTP_PASSWORD=
+EMAIL_FROM=AI Act Readiness <morettifabio70@gmail.com>
+ADMIN_EMAIL=morettifabio70@gmail.com
 RESEND_API_KEY=
-EMAIL_FROM=AI Act Readiness <noreply@example.com>
-ADMIN_EMAIL=
 KIT_BASE_URL=
 CONSULTATION_URL=
 COMPLIANCE_URL=
 ```
 
-Senza `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`, l'API restituisce un id locale e non persiste sul database. Senza `RESEND_API_KEY`, l'API completa il flusso ma segnala che l'email non e stata inviata.
+Senza `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`, l'API restituisce un id locale e non persiste sul database. Per inviare email via Gmail, configura `SMTP_USER` e una password per app Google in `SMTP_PASSWORD`. Se SMTP non e configurato, puoi usare `RESEND_API_KEY` come fallback.
 
 ## Database
 

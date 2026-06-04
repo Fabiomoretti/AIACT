@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import type { LeadPayload } from "@/lib/types";
 
 const defaultLinks = {
@@ -66,19 +67,52 @@ export function buildAdminNotificationEmail(payload: LeadPayload) {
 }
 
 export async function sendReportEmails(payload: LeadPayload) {
+  const from = process.env.EMAIL_FROM ?? "AI Act Readiness <noreply@example.com>";
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const leadHtml = buildLeadReportEmail(payload);
+  const adminHtml = buildAdminNotificationEmail(payload);
+
+  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASSWORD) {
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT ?? 587),
+      secure: process.env.SMTP_SECURE === "true",
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD
+      }
+    });
+
+    await transporter.sendMail({
+      from,
+      to: payload.email,
+      subject: "Il tuo report AI Act Readiness e pronto",
+      html: leadHtml
+    });
+
+    if (adminEmail) {
+      await transporter.sendMail({
+        from,
+        to: adminEmail,
+        subject: `Nuovo lead AI Act: ${payload.company}`,
+        html: adminHtml
+      });
+    }
+
+    return { sent: true, provider: "smtp" };
+  }
+
   if (!process.env.RESEND_API_KEY) {
-    return { sent: false, reason: "RESEND_API_KEY non configurata" };
+    return { sent: false, reason: "SMTP e RESEND_API_KEY non configurati" };
   }
 
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const from = process.env.EMAIL_FROM ?? "AI Act Readiness <noreply@example.com>";
-  const adminEmail = process.env.ADMIN_EMAIL;
 
   await resend.emails.send({
     from,
     to: payload.email,
     subject: "Il tuo report AI Act Readiness e pronto",
-    html: buildLeadReportEmail(payload)
+    html: leadHtml
   });
 
   if (adminEmail) {
@@ -86,9 +120,9 @@ export async function sendReportEmails(payload: LeadPayload) {
       from,
       to: adminEmail,
       subject: `Nuovo lead AI Act: ${payload.company}`,
-      html: buildAdminNotificationEmail(payload)
+      html: adminHtml
     });
   }
 
-  return { sent: true };
+  return { sent: true, provider: "resend" };
 }
