@@ -38,7 +38,6 @@ SMTP_SECURE=false
 SMTP_USER=
 SMTP_PASSWORD=
 EMAIL_FROM=AI Act Readiness <info@fabiomoretti.com>
-ADMIN_EMAIL=info@fabiomoretti.com
 RESEND_API_KEY=
 KIT_BASE_URL=
 CONSULTATION_URL=
@@ -58,6 +57,8 @@ MailerSend richiede:
 - `EMAIL_FROM=AI Act Readiness <info@fabiomoretti.com>`
 
 Il dominio mittente deve essere verificato in MailerSend prima di poter inviare da `info@fabiomoretti.com`. Il codice forza sempre `AI Act Readiness <info@fabiomoretti.com>` come mittente delle email, anche se una variabile ambiente diversa viene impostata per errore.
+
+Ogni compilazione invia anche una notifica amministratore a `info@fabiomoretti.com`, con dati del lead, consensi, punteggio, flag rischio, documenti mancanti, azioni consigliate e risposte complete. Questa notifica viene tentata anche se l'email report al lead fallisce per limiti del provider.
 
 ## Database
 
