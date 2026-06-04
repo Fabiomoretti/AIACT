@@ -108,7 +108,14 @@ export async function POST(request: Request) {
 
   try {
     const persistence = await persistLead(payload);
-    const email = await sendReportEmails(payload);
+    const email = await sendReportEmails(payload).catch((emailError) => {
+      console.error("Email delivery failed", emailError);
+
+      return {
+        sent: false,
+        reason: emailError instanceof Error ? emailError.message : "Errore invio email"
+      };
+    });
 
     return NextResponse.json({
       ok: true,
@@ -118,9 +125,11 @@ export async function POST(request: Request) {
       result: serverResult
     });
   } catch (error) {
+    console.error("Lead persistence failed", error);
+
     return NextResponse.json(
       {
-        error: "Non siamo riusciti a completare il salvataggio o l'invio email.",
+        error: "Non siamo riusciti a salvare il lead. Riprova tra poco.",
         message: error instanceof Error ? error.message : "Errore sconosciuto"
       },
       { status: 500 }

@@ -8,6 +8,13 @@ const defaultLinks = {
   compliance: process.env.COMPLIANCE_URL ?? "https://example.com/compliance-ai-act"
 };
 
+function configured(value: string | undefined) {
+  if (!value) return false;
+  const normalized = value.trim();
+
+  return normalized.length > 0 && !normalized.startsWith("INSERISCI_QUI");
+}
+
 function list(items: string[]) {
   return items.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
 }
@@ -72,7 +79,7 @@ export async function sendReportEmails(payload: LeadPayload) {
   const leadHtml = buildLeadReportEmail(payload);
   const adminHtml = buildAdminNotificationEmail(payload);
 
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASSWORD) {
+  if (configured(process.env.SMTP_HOST) && configured(process.env.SMTP_USER) && configured(process.env.SMTP_PASSWORD)) {
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT ?? 587),
@@ -102,7 +109,7 @@ export async function sendReportEmails(payload: LeadPayload) {
     return { sent: true, provider: "smtp" };
   }
 
-  if (!process.env.RESEND_API_KEY) {
+  if (!configured(process.env.RESEND_API_KEY)) {
     return { sent: false, reason: "SMTP e RESEND_API_KEY non configurati" };
   }
 

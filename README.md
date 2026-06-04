@@ -45,7 +45,7 @@ CONSULTATION_URL=
 COMPLIANCE_URL=
 ```
 
-Senza `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`, l'API restituisce un id locale e non persiste sul database. Per inviare email via Gmail, configura `SMTP_USER` e una password per app Google in `SMTP_PASSWORD`. Se SMTP non e configurato, puoi usare `RESEND_API_KEY` come fallback.
+Senza `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`, l'API restituisce un id locale e non persiste sul database. Per inviare email via Gmail, configura `SMTP_USER` e una password per app Google in `SMTP_PASSWORD`. Se SMTP non e configurato, puoi usare `RESEND_API_KEY` come fallback. I valori placeholder come `INSERISCI_QUI...` vengono ignorati e non bloccano la visualizzazione del report.
 
 ## Database
 
