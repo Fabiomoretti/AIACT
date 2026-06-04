@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: 18% 0.018 286;
+  --muted: 45% 0.018 286;
+  --paper: 96% 0.006 65;
+  --panel: 99% 0.006 65;
+  --line: 88% 0.012 70;
+  --brand: 58% 0.236 22;
+  --brand-soft: 95% 0.038 45;
+  --flame: 72% 0.18 57;
+  --rose: 60% 0.235 12;
+  --night: 17% 0.018 286;
+  --cream: 98% 0.006 70;
+  --success: 58% 0.138 148;
+  --warning: 73% 0.16 63;
+  --danger: 57% 0.205 24;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 8% -8%, color-mix(in oklch, oklch(var(--flame)) 12%, transparent) 0, transparent 28rem),
+    linear-gradient(180deg, oklch(var(--paper)), oklch(94% 0.008 70));
+  color: oklch(var(--ink));
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  background: oklch(var(--brand-soft));
+  color: oklch(var(--ink));
+}
+
+.focus-ring {
+  @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand;
+}
+
+.form-field {
+  @apply w-full rounded-md border border-line bg-panel px-3 py-2.5 text-sm text-ink shadow-sm transition placeholder:text-muted focus:border-rose focus:outline-none focus:ring-2 focus:ring-rose;
+}
+
+.label {
+  @apply text-sm font-semibold text-ink;
+}
+
+.helper {
+  @apply text-xs leading-5 text-muted;
+}
+
+.brand-hero {
+  background:
+    radial-gradient(circle at 18% 18%, color-mix(in oklch, oklch(var(--rose)) 28%, transparent) 0, transparent 24rem),
+    radial-gradient(circle at 78% 30%, color-mix(in oklch, oklch(var(--flame)) 26%, transparent) 0, transparent 24rem),
+    linear-gradient(116deg, oklch(var(--night)) 0%, oklch(21% 0.05 20) 43%, oklch(37% 0.142 24) 72%, oklch(28% 0.116 27) 100%);
+}
+
+.brand-gradient {
+  background: linear-gradient(100deg, oklch(var(--rose)), oklch(var(--brand)) 48%, oklch(var(--flame)));
+}
+
+.brand-highlight {
+  background: linear-gradient(100deg, oklch(var(--rose)), oklch(var(--flame)));
+  color: oklch(var(--cream));
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}

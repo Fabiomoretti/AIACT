@@ -1,0 +1,22 @@
+{
+  "organization_type": "pmi",
+  "sector": "marketing",
+  "employees": "11_50",
+  "uses_ai": "regularly",
+  "tools_used": ["llm_tools", "marketing_content", "crm"],
+  "ai_inventory": "partial",
+  "people_decisions": "no",
+  "hr_use": "no",
+  "sensitive_sectors": "no",
+  "personal_data": "yes",
+  "public_content": "yes",
+  "ai_policy": "partial",
+  "ai_training": "no",
+  "output_review": "partial",
+  "incident_process": "no",
+  "vendor_review": "partial",
+  "ai_transparency": "partial",
+  "privacy_docs": "no",
+  "ai_documents": "partial",
+  "self_readiness": "little_ready"
+}
