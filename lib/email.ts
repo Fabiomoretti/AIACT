@@ -8,6 +8,8 @@ const defaultLinks = {
   compliance: process.env.COMPLIANCE_URL ?? "https://example.com/compliance-ai-act"
 };
 
+const EMAIL_FROM = "AI Act Readiness <info@fabiomoretti.com>";
+
 function configured(value: string | undefined) {
   if (!value) return false;
   const normalized = value.trim();
@@ -74,7 +76,7 @@ export function buildAdminNotificationEmail(payload: LeadPayload) {
 }
 
 export async function sendReportEmails(payload: LeadPayload) {
-  const from = process.env.EMAIL_FROM ?? "AI Act Readiness <noreply@example.com>";
+  const from = EMAIL_FROM;
   const adminEmail = process.env.ADMIN_EMAIL;
   const leadHtml = buildLeadReportEmail(payload);
   const adminHtml = buildAdminNotificationEmail(payload);

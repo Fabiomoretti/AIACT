@@ -57,7 +57,7 @@ MailerSend richiede:
 - `SMTP_USER` e `SMTP_PASSWORD` generati nella sezione SMTP del dominio verificato
 - `EMAIL_FROM=AI Act Readiness <info@fabiomoretti.com>`
 
-Il dominio mittente deve essere verificato in MailerSend prima di poter inviare da `info@fabiomoretti.com`.
+Il dominio mittente deve essere verificato in MailerSend prima di poter inviare da `info@fabiomoretti.com`. Il codice forza sempre `AI Act Readiness <info@fabiomoretti.com>` come mittente delle email, anche se una variabile ambiente diversa viene impostata per errore.
 
 ## Database
 
