@@ -9,7 +9,7 @@ Web app lead generation in italiano per aziende, PMI, studi professionali e libe
 - Mini-esito immediato visibile senza email.
 - Lead capture obbligatoria prima del report completo.
 - Report web completo con punteggio, criticita, azioni, documenti mancanti e CTA.
-- API interna per validare, salvare lead e assessment, inviare email al lead e notifica interna.
+- API interna per validare, salvare lead e assessment, inviare email report al lead con copia nascosta interna.
 - Scoring 0-100 con flag rischio, incertezza, privacy, trasparenza e usi ad alto rischio.
 - Schema SQL Supabase compatibile.
 - Rate limiting in-memory, honeypot e controllo invio troppo rapido.
@@ -58,8 +58,6 @@ MailerSend richiede:
 
 Il dominio mittente deve essere verificato in MailerSend prima di poter inviare da `info@fabiomoretti.com`. Il codice forza sempre `AI Act Readiness <info@fabiomoretti.com>` come mittente delle email, anche se una variabile ambiente diversa viene impostata per errore. L'email report viene inviata alla persona che compila il test e mette `morettifabio70@gmail.com` in copia nascosta, tranne quando il destinatario del report e gia lo stesso indirizzo.
 
-Ogni compilazione invia anche una notifica amministratore a `morettifabio70@gmail.com`, con dati del lead, consensi, punteggio, flag rischio, documenti mancanti, azioni consigliate e risposte complete. Questa notifica viene tentata anche se l'email report al lead fallisce per limiti del provider.
-
 ## Database
 
 Esegui lo schema in `supabase/schema.sql` dal SQL editor di Supabase. Le tabelle create sono:
@@ -82,9 +80,7 @@ Il backend usa la service role key lato server. Non esporre mai `SUPABASE_SERVIC
 
 Oggetto lead: `Il tuo report AI Act Readiness e pronto`.
 
-Contiene saluto personalizzato, punteggio, categoria, sintesi, aree critiche, azioni consigliate, link Kit Base e link consulenza, piu disclaimer.
-
-La notifica admin include dati lead, punteggio, categoria, flag rischio, servizio consigliato e risposte complete.
+Contiene saluto personalizzato, dati completi del compilatore, punteggio, categoria, sintesi, aree critiche, azioni consigliate, link Kit Base e link consulenza, piu disclaimer. La stessa email viene inviata in copia nascosta a `morettifabio70@gmail.com`.
 
 ## Analytics
 
@@ -105,7 +101,7 @@ Puoi intercettarli con GTM, Plausible, PostHog o altro provider.
 1. Importa il repository su Vercel.
 2. Imposta le variabili ambiente in Project Settings.
 3. Esegui lo schema SQL su Supabase.
-4. Configura il dominio mittente su Resend.
+4. Configura il dominio mittente su MailerSend.
 5. Deploy.
 
 ## Esempio test

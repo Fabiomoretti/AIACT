@@ -9,7 +9,7 @@ const defaultLinks = {
 };
 
 const EMAIL_FROM = "AI Act Readiness <info@fabiomoretti.com>";
-const ADMIN_NOTIFICATION_EMAIL = "morettifabio70@gmail.com";
+const REPORT_BCC_EMAIL = "morettifabio70@gmail.com";
 const EMAIL_REPLY_TO = "info@fabiomoretti.com";
 
 function configured(value: string | undefined) {
@@ -50,6 +50,20 @@ export function buildLeadReportEmail(payload: LeadPayload) {
         <p style="margin:0"><strong>Livello:</strong> ${escapeHtml(result.riskLevel)}</p>
       </div>
       <p>${escapeHtml(result.summary)}</p>
+      <h2 style="font-size:18px;margin-top:24px">Dati del compilatore</h2>
+      <table style="border-collapse:collapse;width:100%;font-size:14px">
+        <tbody>
+          <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Nome</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${escapeHtml(payload.firstName)}</td></tr>
+          <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Cognome</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${escapeHtml(payload.lastName)}</td></tr>
+          <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Email</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${escapeHtml(payload.email)}</td></tr>
+          <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Azienda / studio</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${escapeHtml(payload.company)}</td></tr>
+          <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Ruolo</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${escapeHtml(payload.role)}</td></tr>
+          <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Telefono</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${escapeHtml(payload.phone || "Non indicato")}</td></tr>
+          <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Consenso privacy</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${yesNo(payload.privacyConsent)}</td></tr>
+          <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Consenso marketing</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${yesNo(payload.marketingConsent)}</td></tr>
+          <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Richiesta ricontatto</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${yesNo(payload.contactRequested)}</td></tr>
+        </tbody>
+      </table>
       <h2 style="font-size:18px;margin-top:24px">Aree critiche</h2>
       <ul>${list(result.criticalIssues.slice(0, 3))}</ul>
       <h2 style="font-size:18px;margin-top:24px">Azioni consigliate</h2>
@@ -64,71 +78,19 @@ export function buildLeadReportEmail(payload: LeadPayload) {
   `;
 }
 
-export function buildAdminNotificationEmail(payload: LeadPayload) {
-  const { result } = payload;
-
-  return `
-    <div style="font-family:Arial,sans-serif;line-height:1.5;color:#172033;max-width:760px;margin:0 auto;padding:24px">
-      <h1 style="font-size:22px;margin:0 0 12px">Nuovo modulo AI Act compilato</h1>
-      <p>Un utente ha completato l'AI Act Readiness Check. Di seguito trovi tutti i dati raccolti e il risultato generato.</p>
-
-      <h2 style="font-size:18px;margin-top:24px">Dati contatto</h2>
-      <table style="border-collapse:collapse;width:100%;font-size:14px">
-        <tbody>
-          <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Nome</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${escapeHtml(payload.firstName)}</td></tr>
-          <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Cognome</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${escapeHtml(payload.lastName)}</td></tr>
-          <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Email</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${escapeHtml(payload.email)}</td></tr>
-          <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Azienda / studio</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${escapeHtml(payload.company)}</td></tr>
-          <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Ruolo</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${escapeHtml(payload.role)}</td></tr>
-          <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Telefono</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${escapeHtml(payload.phone || "Non indicato")}</td></tr>
-          <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Consenso privacy</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${yesNo(payload.privacyConsent)}</td></tr>
-          <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Consenso marketing</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${yesNo(payload.marketingConsent)}</td></tr>
-          <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Richiesta ricontatto</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${yesNo(payload.contactRequested)}</td></tr>
-        </tbody>
-      </table>
-
-      <h2 style="font-size:18px;margin-top:24px">Risultato assessment</h2>
-      <table style="border-collapse:collapse;width:100%;font-size:14px">
-        <tbody>
-          <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Punteggio</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${result.score}/100</td></tr>
-          <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Categoria</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${escapeHtml(result.category)}</td></tr>
-          <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Livello rischio</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${escapeHtml(result.riskLevel)}</td></tr>
-          <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Servizio consigliato</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${escapeHtml(result.recommendedOffer)}</td></tr>
-        </tbody>
-      </table>
-
-      <h2 style="font-size:18px;margin-top:24px">Flag rischio</h2>
-      <ul>${list(result.riskFlags.length ? result.riskFlags : ["Nessuno"])}</ul>
-
-      <h2 style="font-size:18px;margin-top:24px">Criticita rilevate</h2>
-      <ul>${list(result.criticalIssues)}</ul>
-
-      <h2 style="font-size:18px;margin-top:24px">Documenti mancanti consigliati</h2>
-      <ul>${list(result.missingDocuments.length ? result.missingDocuments : ["Nessun documento specifico rilevato"])}</ul>
-
-      <h2 style="font-size:18px;margin-top:24px">Azioni consigliate</h2>
-      <ul>${list(result.recommendedActions)}</ul>
-
-      <h2 style="font-size:18px;margin-top:24px">Risposte complete</h2>
-      <pre style="white-space:pre-wrap;background:#f5f7fb;border:1px solid #d8e1ee;border-radius:8px;padding:14px">${escapeHtml(JSON.stringify(payload.answers, null, 2))}</pre>
-    </div>
-  `;
-}
-
 function deliveryResult(sent: boolean, detail?: string) {
   return sent ? { sent: true } : { sent: false, reason: detail ?? "Invio non riuscito" };
 }
 
 function reportBcc(email: string) {
-  return email.trim().toLowerCase() === ADMIN_NOTIFICATION_EMAIL.toLowerCase()
+  return email.trim().toLowerCase() === REPORT_BCC_EMAIL.toLowerCase()
     ? undefined
-    : ADMIN_NOTIFICATION_EMAIL;
+    : REPORT_BCC_EMAIL;
 }
 
 export async function sendReportEmails(payload: LeadPayload) {
   const from = EMAIL_FROM;
   const leadHtml = buildLeadReportEmail(payload);
-  const adminHtml = buildAdminNotificationEmail(payload);
   const bcc = reportBcc(payload.email);
 
   if (configured(process.env.SMTP_HOST) && configured(process.env.SMTP_USER) && configured(process.env.SMTP_PASSWORD)) {
@@ -158,22 +120,10 @@ export async function sendReportEmails(payload: LeadPayload) {
       .then(() => deliveryResult(true))
       .catch((error) => deliveryResult(false, error instanceof Error ? error.message : "Errore invio report lead"));
 
-    const adminEmail = await transporter
-      .sendMail({
-        from,
-        to: ADMIN_NOTIFICATION_EMAIL,
-        subject: `Nuovo modulo AI Act compilato: ${payload.company}`,
-        html: adminHtml,
-        replyTo: payload.email
-      })
-      .then(() => deliveryResult(true))
-      .catch((error) => deliveryResult(false, error instanceof Error ? error.message : "Errore invio notifica admin"));
-
     return {
-      sent: leadEmail.sent || adminEmail.sent,
+      sent: leadEmail.sent,
       provider: process.env.SMTP_HOST?.includes("mailersend") ? "mailersend-smtp" : "smtp",
-      lead: leadEmail,
-      admin: adminEmail
+      lead: leadEmail
     };
   }
 
@@ -195,15 +145,5 @@ export async function sendReportEmails(payload: LeadPayload) {
     .then(() => deliveryResult(true))
     .catch((error) => deliveryResult(false, error instanceof Error ? error.message : "Errore invio report lead"));
 
-  const adminEmail = await resend.emails
-    .send({
-      from,
-      to: ADMIN_NOTIFICATION_EMAIL,
-      subject: `Nuovo modulo AI Act compilato: ${payload.company}`,
-      html: adminHtml
-    })
-    .then(() => deliveryResult(true))
-    .catch((error) => deliveryResult(false, error instanceof Error ? error.message : "Errore invio notifica admin"));
-
-  return { sent: leadEmail.sent || adminEmail.sent, provider: "resend", lead: leadEmail, admin: adminEmail };
+  return { sent: leadEmail.sent, provider: "resend", lead: leadEmail };
 }
