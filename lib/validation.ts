@@ -20,7 +20,7 @@ const resultSchema = z.object({
 export const leadPayloadSchema = z.object({
   firstName: z.string().trim().min(2).max(80),
   lastName: z.string().trim().min(2).max(80),
-  email: z.string().trim().email().max(160),
+  email: z.string().trim().email().max(160).transform((value) => value.toLowerCase()),
   company: z.string().trim().min(2).max(140),
   role: z.string().trim().min(2).max(120),
   phone: z.string().trim().max(40).optional().or(z.literal("")),

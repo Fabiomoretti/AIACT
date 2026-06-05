@@ -11,6 +11,7 @@ const defaultLinks = {
 const EMAIL_FROM = "AI Act Readiness <info@fabiomoretti.com>";
 const REPORT_BCC_EMAIL = "morettifabio70@gmail.com";
 const EMAIL_REPLY_TO = "info@fabiomoretti.com";
+const REPORT_SUBJECT = "Il tuo report AI Act Readiness e pronto";
 
 function configured(value: string | undefined) {
   if (!value) return false;
@@ -21,6 +22,10 @@ function configured(value: string | undefined) {
 
 function list(items: string[]) {
   return items.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+}
+
+function normalizeEmail(value: string) {
+  return value.trim().toLowerCase();
 }
 
 function yesNo(value: boolean) {
@@ -38,10 +43,11 @@ function escapeHtml(value: string) {
 
 export function buildLeadReportEmail(payload: LeadPayload) {
   const { result } = payload;
+  const leadEmail = normalizeEmail(payload.email);
 
   return `
     <div style="font-family:Arial,sans-serif;line-height:1.55;color:#172033;max-width:680px;margin:0 auto;padding:24px">
-      <h1 style="font-size:24px;margin:0 0 12px">Il tuo report AI Act Readiness e pronto</h1>
+      <h1 style="font-size:24px;margin:0 0 12px">${REPORT_SUBJECT}</h1>
       <p>Ciao ${escapeHtml(payload.firstName)},</p>
       <p>ecco la sintesi del tuo AI Act Readiness Check. Il report ha finalita informative e non costituisce consulenza legale.</p>
       <div style="border:1px solid #d8e1ee;border-radius:10px;padding:18px;margin:20px 0;background:#f7fbff">
@@ -55,7 +61,7 @@ export function buildLeadReportEmail(payload: LeadPayload) {
         <tbody>
           <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Nome</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${escapeHtml(payload.firstName)}</td></tr>
           <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Cognome</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${escapeHtml(payload.lastName)}</td></tr>
-          <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Email</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${escapeHtml(payload.email)}</td></tr>
+          <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Email</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${escapeHtml(leadEmail)}</td></tr>
           <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Azienda / studio</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${escapeHtml(payload.company)}</td></tr>
           <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Ruolo</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${escapeHtml(payload.role)}</td></tr>
           <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Telefono</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${escapeHtml(payload.phone || "Non indicato")}</td></tr>
@@ -79,51 +85,98 @@ export function buildLeadReportEmail(payload: LeadPayload) {
 }
 
 function deliveryResult(sent: boolean, detail?: string) {
-  return sent ? { sent: true } : { sent: false, reason: detail ?? "Invio non riuscito" };
+  if (sent) return { sent: true };
+
+  const reason = detail ?? "Invio non riuscito";
+
+  return {
+    sent: false,
+    reason,
+    providerLimit: /MS42225|unique recipients|trial account/i.test(reason)
+  };
 }
 
 function reportBcc(email: string) {
-  return email.trim().toLowerCase() === REPORT_BCC_EMAIL.toLowerCase()
+  return normalizeEmail(email) === REPORT_BCC_EMAIL.toLowerCase()
     ? undefined
     : REPORT_BCC_EMAIL;
 }
 
+function errorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error) return error.message;
+  return fallback;
+}
+
+export function buildReportEmailMessage(payload: LeadPayload) {
+  const to = normalizeEmail(payload.email);
+  const bcc = reportBcc(to);
+
+  return {
+    from: EMAIL_FROM,
+    to,
+    ...(bcc ? { bcc } : {}),
+    replyTo: EMAIL_REPLY_TO,
+    subject: REPORT_SUBJECT,
+    html: buildLeadReportEmail({ ...payload, email: to })
+  };
+}
+
+function smtpProviderName() {
+  return process.env.SMTP_HOST?.includes("mailersend") ? "mailersend-smtp" : "smtp";
+}
+
+async function sendViaSmtp(payload: LeadPayload) {
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT ?? 587),
+    secure: process.env.SMTP_SECURE === "true",
+    requireTLS: true,
+    tls: {
+      minVersion: "TLSv1.2"
+    },
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASSWORD
+    }
+  });
+
+  return transporter
+    .sendMail(buildReportEmailMessage(payload))
+    .then(() => deliveryResult(true))
+    .catch((error) => deliveryResult(false, errorMessage(error, "Errore invio report lead via SMTP")));
+}
+
+async function sendViaResend(payload: LeadPayload) {
+  const resend = new Resend(process.env.RESEND_API_KEY);
+
+  return resend.emails
+    .send(buildReportEmailMessage(payload))
+    .then(() => deliveryResult(true))
+    .catch((error) => deliveryResult(false, errorMessage(error, "Errore invio report lead via Resend")));
+}
+
 export async function sendReportEmails(payload: LeadPayload) {
-  const from = EMAIL_FROM;
-  const leadHtml = buildLeadReportEmail(payload);
-  const bcc = reportBcc(payload.email);
-
   if (configured(process.env.SMTP_HOST) && configured(process.env.SMTP_USER) && configured(process.env.SMTP_PASSWORD)) {
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT ?? 587),
-      secure: process.env.SMTP_SECURE === "true",
-      requireTLS: true,
-      tls: {
-        minVersion: "TLSv1.2"
-      },
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD
-      }
-    });
+    const smtpResult = await sendViaSmtp(payload);
 
-    const leadEmail = await transporter
-      .sendMail({
-        from,
-        to: payload.email,
-        bcc,
-        replyTo: EMAIL_REPLY_TO,
-        subject: "Il tuo report AI Act Readiness e pronto",
-        html: leadHtml
-      })
-      .then(() => deliveryResult(true))
-      .catch((error) => deliveryResult(false, error instanceof Error ? error.message : "Errore invio report lead"));
+    if (smtpResult.sent || !configured(process.env.RESEND_API_KEY)) {
+      return {
+        sent: smtpResult.sent,
+        provider: smtpProviderName(),
+        lead: smtpResult
+      };
+    }
+
+    const resendResult = await sendViaResend(payload);
 
     return {
-      sent: leadEmail.sent,
-      provider: process.env.SMTP_HOST?.includes("mailersend") ? "mailersend-smtp" : "smtp",
-      lead: leadEmail
+      sent: resendResult.sent,
+      provider: resendResult.sent ? "resend" : smtpProviderName(),
+      lead: resendResult,
+      attempts: [
+        { provider: smtpProviderName(), lead: smtpResult },
+        { provider: "resend", lead: resendResult }
+      ]
     };
   }
 
@@ -131,19 +184,7 @@ export async function sendReportEmails(payload: LeadPayload) {
     return { sent: false, reason: "SMTP e RESEND_API_KEY non configurati" };
   }
 
-  const resend = new Resend(process.env.RESEND_API_KEY);
-
-  const leadEmail = await resend.emails
-    .send({
-      from,
-      to: payload.email,
-      bcc,
-      replyTo: EMAIL_REPLY_TO,
-      subject: "Il tuo report AI Act Readiness e pronto",
-      html: leadHtml
-    })
-    .then(() => deliveryResult(true))
-    .catch((error) => deliveryResult(false, error instanceof Error ? error.message : "Errore invio report lead"));
+  const leadEmail = await sendViaResend(payload);
 
   return { sent: leadEmail.sent, provider: "resend", lead: leadEmail };
 }
