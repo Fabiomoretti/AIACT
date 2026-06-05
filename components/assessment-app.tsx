@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -173,11 +174,18 @@ export function AssessmentApp() {
     <main ref={topRef} tabIndex={-1} className="min-h-screen focus:outline-none">
       <header className="border-b border-cream/10 bg-night text-cream">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-2 text-sm font-bold">
-            <span className="brand-gradient h-6 w-6 rounded-md" aria-hidden />
-            FM Digital Strategy
+          <Link href="/" className="flex items-center" aria-label="FM Digital Strategy">
+            <span className="rounded-md bg-cream/95 px-2.5 py-2 shadow-panel">
+              <Image
+                src="https://www.fabiomoretti.com/wp-content/uploads/2025/04/Logo-FM-scuro.png"
+                alt="FM Digital Strategy"
+                width={190}
+                height={42}
+                className="h-8 w-auto"
+              />
+            </span>
           </Link>
-          <Link href="/privacy" className="text-sm font-semibold text-cream opacity-70 hover:opacity-100">
+          <Link href="/privacy" target="_blank" rel="noreferrer" className="text-sm font-semibold text-cream opacity-70 hover:opacity-100">
             Privacy
           </Link>
         </div>
@@ -393,7 +401,7 @@ export function AssessmentApp() {
                   />
                   <span>
                     Accetto l&apos;informativa privacy e autorizzo il trattamento dei dati per ricevere il report.
-                    <Link className="ml-1 font-semibold text-rose" href="/privacy">Leggi privacy</Link>
+                    <Link className="ml-1 font-semibold text-rose" href="/privacy" target="_blank" rel="noreferrer">Leggi privacy</Link>
                   </span>
                 </label>
                 <FieldError>{errors.privacyConsent}</FieldError>

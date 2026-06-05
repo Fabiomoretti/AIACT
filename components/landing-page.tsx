@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, CheckCircle2, ClipboardList, FileSearch, GraduationCap, ShieldCheck } from "lucide-react";
 import { Button, Badge } from "@/components/ui";
 import { trackEvent } from "@/lib/analytics";
@@ -27,11 +28,18 @@ export function LandingPage() {
       <section className="brand-hero relative overflow-hidden border-b border-night text-cream">
         <div className="mx-auto grid min-h-[610px] max-w-6xl gap-8 px-4 pb-10 pt-6 sm:px-6 lg:grid-cols-[1.08fr_0.92fr] lg:px-8">
           <header className="col-span-full flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2 text-sm font-bold tracking-normal text-cream">
-              <span className="brand-gradient h-7 w-7 rounded-md" aria-hidden />
-              FM Digital Strategy
+            <Link href="/" className="flex items-center" aria-label="FM Digital Strategy">
+              <span className="rounded-md bg-cream/95 px-2.5 py-2 shadow-panel">
+                <Image
+                  src="https://www.fabiomoretti.com/wp-content/uploads/2025/04/Logo-FM-scuro.png"
+                  alt="FM Digital Strategy"
+                  width={190}
+                  height={42}
+                  className="h-8 w-auto"
+                />
+              </span>
             </Link>
-            <Link href="/privacy" className="text-sm font-semibold text-cream opacity-75 hover:opacity-100">
+            <Link href="/privacy" target="_blank" rel="noreferrer" className="text-sm font-semibold text-cream opacity-75 hover:opacity-100">
               Privacy
             </Link>
           </header>

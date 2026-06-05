@@ -10,6 +10,7 @@ const defaultLinks = {
 
 const EMAIL_FROM = "AI Act Readiness <info@fabiomoretti.com>";
 const ADMIN_NOTIFICATION_EMAIL = "morettifabio70@gmail.com";
+const EMAIL_REPLY_TO = "info@fabiomoretti.com";
 
 function configured(value: string | undefined) {
   if (!value) return false;
@@ -118,10 +119,17 @@ function deliveryResult(sent: boolean, detail?: string) {
   return sent ? { sent: true } : { sent: false, reason: detail ?? "Invio non riuscito" };
 }
 
+function reportBcc(email: string) {
+  return email.trim().toLowerCase() === ADMIN_NOTIFICATION_EMAIL.toLowerCase()
+    ? undefined
+    : ADMIN_NOTIFICATION_EMAIL;
+}
+
 export async function sendReportEmails(payload: LeadPayload) {
   const from = EMAIL_FROM;
   const leadHtml = buildLeadReportEmail(payload);
   const adminHtml = buildAdminNotificationEmail(payload);
+  const bcc = reportBcc(payload.email);
 
   if (configured(process.env.SMTP_HOST) && configured(process.env.SMTP_USER) && configured(process.env.SMTP_PASSWORD)) {
     const transporter = nodemailer.createTransport({
@@ -142,6 +150,8 @@ export async function sendReportEmails(payload: LeadPayload) {
       .sendMail({
         from,
         to: payload.email,
+        bcc,
+        replyTo: EMAIL_REPLY_TO,
         subject: "Il tuo report AI Act Readiness e pronto",
         html: leadHtml
       })
@@ -177,6 +187,8 @@ export async function sendReportEmails(payload: LeadPayload) {
     .send({
       from,
       to: payload.email,
+      bcc,
+      replyTo: EMAIL_REPLY_TO,
       subject: "Il tuo report AI Act Readiness e pronto",
       html: leadHtml
     })

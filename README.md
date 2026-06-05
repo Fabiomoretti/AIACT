@@ -56,7 +56,7 @@ MailerSend richiede:
 - `SMTP_USER` e `SMTP_PASSWORD` generati nella sezione SMTP del dominio verificato
 - `EMAIL_FROM=AI Act Readiness <info@fabiomoretti.com>`
 
-Il dominio mittente deve essere verificato in MailerSend prima di poter inviare da `info@fabiomoretti.com`. Il codice forza sempre `AI Act Readiness <info@fabiomoretti.com>` come mittente delle email, anche se una variabile ambiente diversa viene impostata per errore.
+Il dominio mittente deve essere verificato in MailerSend prima di poter inviare da `info@fabiomoretti.com`. Il codice forza sempre `AI Act Readiness <info@fabiomoretti.com>` come mittente delle email, anche se una variabile ambiente diversa viene impostata per errore. L'email report viene inviata alla persona che compila il test e mette `morettifabio70@gmail.com` in copia nascosta, tranne quando il destinatario del report e gia lo stesso indirizzo.
 
 Ogni compilazione invia anche una notifica amministratore a `morettifabio70@gmail.com`, con dati del lead, consensi, punteggio, flag rischio, documenti mancanti, azioni consigliate e risposte complete. Questa notifica viene tentata anche se l'email report al lead fallisce per limiti del provider.
 
