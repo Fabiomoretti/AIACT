@@ -9,7 +9,7 @@ const defaultLinks = {
 };
 
 const EMAIL_FROM = "AI Act Readiness <info@fabiomoretti.com>";
-const ADMIN_NOTIFICATION_EMAIL = "info@fabiomoretti.com";
+const ADMIN_NOTIFICATION_EMAIL = "morettifabio70@gmail.com";
 
 function configured(value: string | undefined) {
   if (!value) return false;
