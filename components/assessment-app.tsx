@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -70,6 +70,7 @@ function validateLead(form: LeadForm) {
 }
 
 export function AssessmentApp() {
+  const topRef = useRef<HTMLElement>(null);
   const [answers, setAnswers] = useState<Answers>({});
   const [sectionIndex, setSectionIndex] = useState(0);
   const [stage, setStage] = useState<Stage>("questions");
@@ -87,6 +88,15 @@ export function AssessmentApp() {
   const currentSection = sections[sectionIndex];
   const progress = Math.round((answeredCount / totalQuestionCount) * 100);
   const sectionComplete = isSectionComplete(sectionIndex, answers);
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      topRef.current?.focus({ preventScroll: true });
+    });
+  }, [sectionIndex, stage]);
 
   function updateSingle(id: string, value: string) {
     setAnswers((current) => ({ ...current, [id]: value }));
@@ -107,7 +117,6 @@ export function AssessmentApp() {
 
     if (sectionIndex < sections.length - 1) {
       setSectionIndex((index) => index + 1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
@@ -115,7 +124,6 @@ export function AssessmentApp() {
     setResult(calculated);
     setStage("mini");
     trackEvent("lead_form_viewed", { score: calculated.score, category: calculated.category });
-    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   async function submitLead(event: React.FormEvent<HTMLFormElement>) {
@@ -159,11 +167,10 @@ export function AssessmentApp() {
     setResult(data.result);
     setStage("report");
     trackEvent("report_viewed", { score: data.result.score, category: data.result.category });
-    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   return (
-    <main className="min-h-screen">
+    <main ref={topRef} tabIndex={-1} className="min-h-screen focus:outline-none">
       <header className="border-b border-cream/10 bg-night text-cream">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2 text-sm font-bold">
@@ -211,6 +218,13 @@ export function AssessmentApp() {
               {currentSection.questions.map((question) => (
                 <Panel key={question.id} className="p-5">
                   <h2 className="text-base font-bold">{question.text}</h2>
+                  {question.description && (
+                    <div className="mt-2 space-y-2 text-xs leading-5 text-muted">
+                      {question.description.map((paragraph) => (
+                        <p key={paragraph}>{paragraph}</p>
+                      ))}
+                    </div>
+                  )}
                   <div className="mt-4 grid gap-2 sm:grid-cols-2">
                     {question.options.map((option) => {
                       const selected =
