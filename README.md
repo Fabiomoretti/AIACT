@@ -56,7 +56,7 @@ MailerSend richiede:
 - `SMTP_USER` e `SMTP_PASSWORD` generati nella sezione SMTP del dominio verificato
 - `EMAIL_FROM=AI Act Readiness <info@fabiomoretti.com>`
 
-Il dominio mittente deve essere verificato in MailerSend prima di poter inviare da `info@fabiomoretti.com`. Il codice forza sempre `AI Act Readiness <info@fabiomoretti.com>` come mittente delle email, anche se una variabile ambiente diversa viene impostata per errore. L'email report viene inviata alla persona che compila il test e mette `morettifabio70@gmail.com` in copia nascosta, tranne quando il destinatario del report e gia lo stesso indirizzo. L'indirizzo del compilatore viene normalizzato lato server prima di salvataggio e invio.
+Il dominio mittente deve essere verificato in MailerSend prima di poter inviare da `info@fabiomoretti.com`. Il codice forza sempre `AI Act Readiness <info@fabiomoretti.com>` come mittente delle email, anche se una variabile ambiente diversa viene impostata per errore. L'email report viene inviata alla persona che compila il test e mette `morettifabio70@gmail.com` in copia nascosta, tranne quando il destinatario del report e gia lo stesso indirizzo. L'indirizzo del compilatore viene normalizzato lato server prima di salvataggio e invio. Se il provider rifiuta il messaggio con BCC, l'app ritenta l'invio al lead senza BCC e manda comunque una copia separata del report a `morettifabio70@gmail.com`.
 
 ## Database
 

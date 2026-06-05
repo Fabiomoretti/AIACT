@@ -107,16 +107,23 @@ function errorMessage(error: unknown, fallback: string) {
   return fallback;
 }
 
-export function buildReportEmailMessage(payload: LeadPayload) {
-  const to = normalizeEmail(payload.email);
-  const bcc = reportBcc(to);
+type ReportMessageOptions = {
+  includeBcc?: boolean;
+  replyTo?: string;
+  subject?: string;
+  to?: string;
+};
+
+export function buildReportEmailMessage(payload: LeadPayload, options: ReportMessageOptions = {}) {
+  const to = normalizeEmail(options.to ?? payload.email);
+  const bcc = options.includeBcc === false ? undefined : reportBcc(to);
 
   return {
     from: EMAIL_FROM,
     to,
     ...(bcc ? { bcc } : {}),
-    replyTo: EMAIL_REPLY_TO,
-    subject: REPORT_SUBJECT,
+    replyTo: options.replyTo ?? EMAIL_REPLY_TO,
+    subject: options.subject ?? REPORT_SUBJECT,
     html: buildLeadReportEmail({ ...payload, email: to })
   };
 }
@@ -125,7 +132,7 @@ function smtpProviderName() {
   return process.env.SMTP_HOST?.includes("mailersend") ? "mailersend-smtp" : "smtp";
 }
 
-async function sendViaSmtp(payload: LeadPayload) {
+async function sendViaSmtp(payload: LeadPayload, options?: ReportMessageOptions) {
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT ?? 587),
@@ -141,50 +148,105 @@ async function sendViaSmtp(payload: LeadPayload) {
   });
 
   return transporter
-    .sendMail(buildReportEmailMessage(payload))
+    .sendMail(buildReportEmailMessage(payload, options))
     .then(() => deliveryResult(true))
     .catch((error) => deliveryResult(false, errorMessage(error, "Errore invio report lead via SMTP")));
 }
 
-async function sendViaResend(payload: LeadPayload) {
+async function sendViaResend(payload: LeadPayload, options?: ReportMessageOptions) {
   const resend = new Resend(process.env.RESEND_API_KEY);
 
   return resend.emails
-    .send(buildReportEmailMessage(payload))
+    .send(buildReportEmailMessage(payload, options))
     .then(() => deliveryResult(true))
     .catch((error) => deliveryResult(false, errorMessage(error, "Errore invio report lead via Resend")));
 }
 
-export async function sendReportEmails(payload: LeadPayload) {
+async function sendThroughAvailableProviders(payload: LeadPayload, options?: ReportMessageOptions) {
+  const attempts = [];
+
   if (configured(process.env.SMTP_HOST) && configured(process.env.SMTP_USER) && configured(process.env.SMTP_PASSWORD)) {
-    const smtpResult = await sendViaSmtp(payload);
+    const smtpResult = await sendViaSmtp(payload, options);
+    attempts.push({ provider: smtpProviderName(), lead: smtpResult });
 
     if (smtpResult.sent || !configured(process.env.RESEND_API_KEY)) {
       return {
         sent: smtpResult.sent,
         provider: smtpProviderName(),
-        lead: smtpResult
+        lead: smtpResult,
+        attempts
       };
     }
 
-    const resendResult = await sendViaResend(payload);
+    const resendResult = await sendViaResend(payload, options);
+    attempts.push({ provider: "resend", lead: resendResult });
 
     return {
       sent: resendResult.sent,
       provider: resendResult.sent ? "resend" : smtpProviderName(),
       lead: resendResult,
-      attempts: [
-        { provider: smtpProviderName(), lead: smtpResult },
-        { provider: "resend", lead: resendResult }
-      ]
+      attempts
     };
   }
 
   if (!configured(process.env.RESEND_API_KEY)) {
-    return { sent: false, reason: "SMTP e RESEND_API_KEY non configurati" };
+    const lead = deliveryResult(false, "SMTP e RESEND_API_KEY non configurati");
+
+    return {
+      sent: false,
+      provider: "none",
+      lead,
+      attempts: [{ provider: "none", lead }]
+    };
   }
 
-  const leadEmail = await sendViaResend(payload);
+  const leadEmail = await sendViaResend(payload, options);
+  attempts.push({ provider: "resend", lead: leadEmail });
 
-  return { sent: leadEmail.sent, provider: "resend", lead: leadEmail };
+  return { sent: leadEmail.sent, provider: "resend", lead: leadEmail, attempts };
+}
+
+async function sendOwnerCopy(payload: LeadPayload, reason: "bcc-failed" | "bcc-skipped") {
+  return sendThroughAvailableProviders(payload, {
+    includeBcc: false,
+    replyTo: normalizeEmail(payload.email),
+    subject: `Copia report AI Act Readiness: ${payload.company}`,
+    to: REPORT_BCC_EMAIL
+  }).then((result) => ({ ...result, reason }));
+}
+
+export async function sendReportEmails(payload: LeadPayload) {
+  const bcc = reportBcc(payload.email);
+  const withBcc = await sendThroughAvailableProviders(payload, { includeBcc: true });
+
+  if (withBcc.sent) {
+    return {
+      sent: true,
+      provider: withBcc.provider,
+      lead: withBcc.lead,
+      ownerCopy: bcc ? { sent: true, method: "bcc" } : { sent: true, method: "same-recipient" },
+      attempts: {
+        withBcc: withBcc.attempts
+      }
+    };
+  }
+
+  const withoutBcc = bcc
+    ? await sendThroughAvailableProviders(payload, { includeBcc: false })
+    : withBcc;
+
+  const ownerCopy = bcc
+    ? await sendOwnerCopy(payload, withoutBcc.sent ? "bcc-skipped" : "bcc-failed")
+    : { sent: false, reason: "Il destinatario del report coincide con l'indirizzo interno" };
+
+  return {
+    sent: withoutBcc.sent,
+    provider: withoutBcc.provider,
+    lead: withoutBcc.lead,
+    ownerCopy,
+    attempts: {
+      withBcc: withBcc.attempts,
+      withoutBcc: bcc ? withoutBcc.attempts : undefined
+    }
+  };
 }
