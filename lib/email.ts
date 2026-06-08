@@ -70,10 +70,14 @@ export function buildLeadReportEmail(payload: LeadPayload) {
           <tr><td style="padding:8px;border:1px solid #d8e1ee"><strong>Richiesta ricontatto</strong></td><td style="padding:8px;border:1px solid #d8e1ee">${yesNo(payload.contactRequested)}</td></tr>
         </tbody>
       </table>
-      <h2 style="font-size:18px;margin-top:24px">Aree critiche</h2>
-      <ul>${list(result.criticalIssues.slice(0, 3))}</ul>
+      <h2 style="font-size:18px;margin-top:24px">Flag rischio</h2>
+      <ul>${list(result.riskFlags.length ? result.riskFlags : ["Nessun flag di rischio specifico rilevato"])}</ul>
+      <h2 style="font-size:18px;margin-top:24px">Criticita rilevate</h2>
+      <ul>${list(result.criticalIssues.length ? result.criticalIssues : ["Nessuna criticita specifica rilevata"])}</ul>
+      <h2 style="font-size:18px;margin-top:24px">Documenti mancanti consigliati</h2>
+      <ul>${list(result.missingDocuments.length ? result.missingDocuments : ["Nessun documento specifico rilevato"])}</ul>
       <h2 style="font-size:18px;margin-top:24px">Azioni consigliate</h2>
-      <ul>${list(result.recommendedActions.slice(0, 5))}</ul>
+      <ul>${list(result.recommendedActions.length ? result.recommendedActions : ["Nessuna azione specifica rilevata"])}</ul>
       <p style="margin-top:24px">
         <a href="${defaultLinks.kit}" style="color:#2457c5;font-weight:bold">Scarica il Kit Base AI Act</a><br>
         <a href="${defaultLinks.consultation}" style="color:#2457c5;font-weight:bold">Prenota un Check-up AI Act</a><br>
@@ -155,47 +159,27 @@ async function sendViaResend(payload: LeadPayload) {
 }
 
 async function sendLeadReport(payload: LeadPayload) {
-  const attempts = [];
+  const smtpResult = await sendViaLeadSmtp(payload);
+  const attempts = [{ provider: smtpProviderName(), lead: smtpResult }];
 
-  if (configured(process.env.SMTP_HOST) && configured(process.env.SMTP_USER) && configured(process.env.SMTP_PASSWORD)) {
-    const smtpResult = await sendViaLeadSmtp(payload);
-    attempts.push({ provider: smtpProviderName(), lead: smtpResult });
-
-    if (smtpResult.sent || !configured(process.env.RESEND_API_KEY)) {
-      return {
-        sent: smtpResult.sent,
-        provider: smtpProviderName(),
-        lead: smtpResult,
-        attempts
-      };
-    }
-
-    const resendResult = await sendViaResend(payload);
-    attempts.push({ provider: "resend", lead: resendResult });
-
+  if (smtpResult.sent || !configured(process.env.RESEND_API_KEY)) {
     return {
-      sent: resendResult.sent,
-      provider: resendResult.sent ? "resend" : smtpProviderName(),
-      lead: resendResult,
+      sent: smtpResult.sent,
+      provider: smtpProviderName(),
+      lead: smtpResult,
       attempts
     };
   }
 
-  if (!configured(process.env.RESEND_API_KEY)) {
-    const lead = deliveryResult(false, "SMTP e RESEND_API_KEY non configurati");
+  const resendResult = await sendViaResend(payload);
+  attempts.push({ provider: "resend", lead: resendResult });
 
-    return {
-      sent: false,
-      provider: "none",
-      lead,
-      attempts: [{ provider: "none", lead }]
-    };
-  }
-
-  const leadEmail = await sendViaResend(payload);
-  attempts.push({ provider: "resend", lead: leadEmail });
-
-  return { sent: leadEmail.sent, provider: "resend", lead: leadEmail, attempts };
+  return {
+    sent: resendResult.sent,
+    provider: resendResult.sent ? "resend" : smtpProviderName(),
+    lead: resendResult,
+    attempts
+  };
 }
 
 async function sendOwnerCopyViaSender(payload: LeadPayload) {

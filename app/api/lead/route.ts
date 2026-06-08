@@ -117,6 +117,14 @@ export async function POST(request: Request) {
       };
     });
 
+    if (!email.sent) {
+      console.error("Lead report email was not sent", email);
+    }
+
+    if ("ownerCopy" in email && email.ownerCopy && !email.ownerCopy.sent) {
+      console.error("Sender owner copy was not sent", email.ownerCopy);
+    }
+
     return NextResponse.json({
       ok: true,
       leadId: persistence.leadId,

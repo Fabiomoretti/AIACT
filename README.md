@@ -98,7 +98,7 @@ Il backend usa la service role key lato server. Non esporre mai `SUPABASE_SERVIC
 
 Oggetto lead: `Il tuo report AI Act Readiness e pronto`.
 
-Contiene saluto personalizzato, dati completi del compilatore, punteggio, categoria, sintesi, aree critiche, azioni consigliate, link Kit Base e link consulenza, piu disclaimer. MailerSend invia il report all'indirizzo inserito nel form; Sender invia separatamente la copia completa a `morettifabio70@gmail.com`. Se l'SMTP del compilatore fallisce e `RESEND_API_KEY` e configurato, l'app tenta automaticamente il fallback via Resend.
+Contiene saluto personalizzato, dati completi del compilatore, punteggio, categoria, sintesi, flag rischio, criticita complete, documenti mancanti, tutte le azioni consigliate, link Kit Base e link consulenza, piu disclaimer. MailerSend tenta direttamente l'invio del report all'indirizzo inserito nel form, senza una verifica SMTP preliminare; Sender invia separatamente la copia completa a `morettifabio70@gmail.com`. Se l'SMTP del compilatore fallisce e `RESEND_API_KEY` e configurato, l'app tenta automaticamente il fallback via Resend.
 
 ## Analytics
 
