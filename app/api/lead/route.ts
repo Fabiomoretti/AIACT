@@ -122,7 +122,7 @@ export async function POST(request: Request) {
     }
 
     if ("ownerCopy" in email && email.ownerCopy && !email.ownerCopy.sent) {
-      console.error("Sender owner copy was not sent", email.ownerCopy);
+      console.error("Sender BCC copy was not sent", email.ownerCopy);
     }
 
     return NextResponse.json({

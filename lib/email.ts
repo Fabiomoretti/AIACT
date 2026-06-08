@@ -1,4 +1,3 @@
-import { Resend } from "resend";
 import nodemailer from "nodemailer";
 import type { LeadPayload } from "@/lib/types";
 
@@ -91,12 +90,9 @@ export function buildLeadReportEmail(payload: LeadPayload) {
 function deliveryResult(sent: boolean, detail?: string) {
   if (sent) return { sent: true };
 
-  const reason = detail ?? "Invio non riuscito";
-
   return {
     sent: false,
-    reason,
-    providerLimit: /MS42225|unique recipients|trial account/i.test(reason)
+    reason: detail ?? "Invio non riuscito"
   };
 }
 
@@ -105,92 +101,27 @@ function errorMessage(error: unknown, fallback: string) {
   return fallback;
 }
 
-type ReportMessageOptions = {
-  from?: string;
-  replyTo?: string;
-  subject?: string;
-  to?: string;
-};
+function reportBcc(email: string) {
+  const normalized = normalizeEmail(email);
 
-export function buildReportEmailMessage(payload: LeadPayload, options: ReportMessageOptions = {}) {
-  const to = normalizeEmail(options.to ?? payload.email);
+  return normalized === OWNER_REPORT_EMAIL ? undefined : OWNER_REPORT_EMAIL;
+}
+
+export function buildReportEmailMessage(payload: LeadPayload) {
+  const to = normalizeEmail(payload.email);
+  const bcc = reportBcc(to);
 
   return {
-    from: options.from ?? EMAIL_FROM,
+    from: configured(process.env.SENDER_EMAIL_FROM) ? process.env.SENDER_EMAIL_FROM : EMAIL_FROM,
     to,
-    replyTo: options.replyTo ?? EMAIL_REPLY_TO,
-    subject: options.subject ?? REPORT_SUBJECT,
+    ...(bcc ? { bcc } : {}),
+    replyTo: EMAIL_REPLY_TO,
+    subject: REPORT_SUBJECT,
     html: buildLeadReportEmail(payload)
   };
 }
 
-function smtpProviderName() {
-  return process.env.SMTP_HOST?.includes("mailersend") ? "mailersend-smtp" : "smtp";
-}
-
-async function sendViaLeadSmtp(payload: LeadPayload) {
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT ?? 587),
-    secure: process.env.SMTP_SECURE === "true",
-    requireTLS: true,
-    tls: {
-      minVersion: "TLSv1.2"
-    },
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASSWORD
-    }
-  });
-
-  return transporter
-    .sendMail(buildReportEmailMessage(payload))
-    .then(() => deliveryResult(true))
-    .catch((error) => deliveryResult(false, errorMessage(error, "Errore invio report al compilatore via SMTP")));
-}
-
-async function sendViaResend(payload: LeadPayload) {
-  const resend = new Resend(process.env.RESEND_API_KEY);
-
-  return resend.emails
-    .send(buildReportEmailMessage(payload))
-    .then(() => deliveryResult(true))
-    .catch((error) => deliveryResult(false, errorMessage(error, "Errore invio report lead via Resend")));
-}
-
-async function sendLeadReport(payload: LeadPayload) {
-  const smtpResult = await sendViaLeadSmtp(payload);
-  const attempts = [{ provider: smtpProviderName(), lead: smtpResult }];
-
-  if (smtpResult.sent || !configured(process.env.RESEND_API_KEY)) {
-    return {
-      sent: smtpResult.sent,
-      provider: smtpProviderName(),
-      lead: smtpResult,
-      attempts
-    };
-  }
-
-  const resendResult = await sendViaResend(payload);
-  attempts.push({ provider: "resend", lead: resendResult });
-
-  return {
-    sent: resendResult.sent,
-    provider: resendResult.sent ? "resend" : smtpProviderName(),
-    lead: resendResult,
-    attempts
-  };
-}
-
-async function sendOwnerCopyViaSender(payload: LeadPayload) {
-  if (!configured(process.env.SENDER_SMTP_USER) || !configured(process.env.SENDER_SMTP_PASSWORD)) {
-    return {
-      sent: false,
-      provider: "sender-smtp",
-      lead: deliveryResult(false, "Credenziali SENDER_SMTP_USER e SENDER_SMTP_PASSWORD non configurate")
-    };
-  }
-
+async function sendViaSender(payload: LeadPayload) {
   const transporter = nodemailer.createTransport({
     host: process.env.SENDER_SMTP_HOST ?? "smtp.sender.net",
     port: Number(process.env.SENDER_SMTP_PORT ?? 587),
@@ -205,36 +136,35 @@ async function sendOwnerCopyViaSender(payload: LeadPayload) {
     }
   });
 
-  const message = buildReportEmailMessage(payload, {
-    from: configured(process.env.SENDER_EMAIL_FROM) ? process.env.SENDER_EMAIL_FROM : EMAIL_FROM,
-    replyTo: normalizeEmail(payload.email),
-    subject: `Copia report AI Act Readiness: ${payload.company}`,
-    to: OWNER_REPORT_EMAIL
-  });
-
-  const result = await transporter
-    .sendMail(message)
+  return transporter
+    .sendMail(buildReportEmailMessage(payload))
     .then(() => deliveryResult(true))
-    .catch((error) => deliveryResult(false, errorMessage(error, "Errore invio copia interna via Sender SMTP")));
+    .catch((error) => deliveryResult(false, errorMessage(error, "Errore invio report via Sender SMTP")));
+}
+
+export async function sendReportEmails(payload: LeadPayload) {
+  if (!configured(process.env.SENDER_SMTP_USER) || !configured(process.env.SENDER_SMTP_PASSWORD)) {
+    const lead = deliveryResult(false, "Credenziali SENDER_SMTP_USER e SENDER_SMTP_PASSWORD non configurate");
+
+    return {
+      sent: false,
+      provider: "sender-smtp",
+      lead,
+      ownerCopy: { sent: false, method: "bcc", reason: lead.reason },
+      attempts: [{ provider: "sender-smtp", lead }]
+    };
+  }
+
+  const result = await sendViaSender(payload);
+  const bcc = reportBcc(payload.email);
 
   return {
     sent: result.sent,
     provider: "sender-smtp",
-    lead: result
-  };
-}
-
-export async function sendReportEmails(payload: LeadPayload) {
-  const [leadReport, ownerCopy] = await Promise.all([
-    sendLeadReport(payload),
-    sendOwnerCopyViaSender(payload)
-  ]);
-
-  return {
-    sent: leadReport.sent,
-    provider: leadReport.provider,
-    lead: leadReport.lead,
-    ownerCopy,
-    attempts: leadReport.attempts
+    lead: result,
+    ownerCopy: bcc
+      ? { sent: result.sent, method: "bcc", to: OWNER_REPORT_EMAIL }
+      : { sent: result.sent, method: "same-recipient" },
+    attempts: [{ provider: "sender-smtp", lead: result }]
   };
 }

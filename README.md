@@ -32,41 +32,22 @@ Copia `.env.example` in `.env.local` e compila i valori necessari.
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
-SMTP_HOST=smtp.mailersend.net
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=
-SMTP_PASSWORD=
-EMAIL_FROM=AI Act Readiness <info@fabiomoretti.com>
 SENDER_SMTP_HOST=smtp.sender.net
 SENDER_SMTP_PORT=587
 SENDER_SMTP_SECURE=false
 SENDER_SMTP_USER=
 SENDER_SMTP_PASSWORD=
 SENDER_EMAIL_FROM=AI Act Readiness <info@fabiomoretti.com>
-RESEND_API_KEY=
 KIT_BASE_URL=
 CONSULTATION_URL=
 COMPLIANCE_URL=
 ```
 
-Senza `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`, l'API restituisce un id locale e non persiste sul database. Per inviare email via MailerSend SMTP, verifica il dominio `fabiomoretti.com` in MailerSend, genera un utente SMTP dal dominio e configura `SMTP_USER` e `SMTP_PASSWORD`. Se SMTP non e configurato, puoi usare `RESEND_API_KEY` come fallback. I valori placeholder come `INSERISCI_QUI...` vengono ignorati e non bloccano la visualizzazione del report.
-
-### MailerSend SMTP
-
-MailerSend richiede:
-
-- `SMTP_HOST=smtp.mailersend.net`
-- `SMTP_PORT=587`
-- `SMTP_SECURE=false`, per usare STARTTLS sulla porta 587
-- `SMTP_USER` e `SMTP_PASSWORD` generati nella sezione SMTP del dominio verificato
-- `EMAIL_FROM=AI Act Readiness <info@fabiomoretti.com>`
-
-Il dominio mittente deve essere verificato in MailerSend prima di poter inviare da `info@fabiomoretti.com`. Il codice forza sempre `AI Act Readiness <info@fabiomoretti.com>` come mittente del report al compilatore. L'indirizzo inserito nel form viene normalizzato lato server prima di salvataggio e invio.
+Senza `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`, l'API restituisce un id locale e non persiste sul database. I valori placeholder come `INSERISCI_QUI...` vengono ignorati e non bloccano la visualizzazione del report.
 
 ### Sender SMTP
 
-La copia interna completa viene inviata separatamente a `morettifabio70@gmail.com` tramite Sender:
+Sender gestisce tutto l'invio email:
 
 - `SENDER_SMTP_HOST=smtp.sender.net`
 - `SENDER_SMTP_PORT=587`
@@ -74,7 +55,7 @@ La copia interna completa viene inviata separatamente a `morettifabio70@gmail.co
 - `SENDER_SMTP_USER` e `SENDER_SMTP_PASSWORD` generati nell'account Sender
 - `SENDER_EMAIL_FROM=AI Act Readiness <info@fabiomoretti.com>`
 
-I due invii sono indipendenti e partono in parallelo: un errore del provider usato per il compilatore non blocca la copia interna tramite Sender, e viceversa.
+Il report viene inviato all'indirizzo inserito nel form e la stessa email mette `morettifabio70@gmail.com` in copia nascosta. Se il compilatore usa gia la stessa Gmail, la copia nascosta viene omessa per evitare duplicati.
 
 ## Database
 
@@ -98,7 +79,7 @@ Il backend usa la service role key lato server. Non esporre mai `SUPABASE_SERVIC
 
 Oggetto lead: `Il tuo report AI Act Readiness e pronto`.
 
-Contiene saluto personalizzato, dati completi del compilatore, punteggio, categoria, sintesi, flag rischio, criticita complete, documenti mancanti, tutte le azioni consigliate, link Kit Base e link consulenza, piu disclaimer. MailerSend tenta direttamente l'invio del report all'indirizzo inserito nel form, senza una verifica SMTP preliminare; Sender invia separatamente la copia completa a `morettifabio70@gmail.com`. Se l'SMTP del compilatore fallisce e `RESEND_API_KEY` e configurato, l'app tenta automaticamente il fallback via Resend.
+Contiene saluto personalizzato, dati completi del compilatore, punteggio, categoria, sintesi, flag rischio, criticita complete, documenti mancanti, tutte le azioni consigliate, link Kit Base e link consulenza, piu disclaimer. Sender invia il report direttamente all'indirizzo inserito nel form e aggiunge `morettifabio70@gmail.com` in BCC.
 
 ## Analytics
 
@@ -119,7 +100,7 @@ Puoi intercettarli con GTM, Plausible, PostHog o altro provider.
 1. Importa il repository su Vercel.
 2. Imposta le variabili ambiente in Project Settings.
 3. Esegui lo schema SQL su Supabase.
-4. Configura il dominio mittente su MailerSend e Sender.
+4. Configura il dominio mittente su Sender.
 5. Deploy.
 
 ## Esempio test
