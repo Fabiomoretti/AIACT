@@ -38,6 +38,12 @@ SMTP_SECURE=false
 SMTP_USER=
 SMTP_PASSWORD=
 EMAIL_FROM=AI Act Readiness <info@fabiomoretti.com>
+SENDER_SMTP_HOST=smtp.sender.net
+SENDER_SMTP_PORT=587
+SENDER_SMTP_SECURE=false
+SENDER_SMTP_USER=
+SENDER_SMTP_PASSWORD=
+SENDER_EMAIL_FROM=AI Act Readiness <info@fabiomoretti.com>
 RESEND_API_KEY=
 KIT_BASE_URL=
 CONSULTATION_URL=
@@ -56,7 +62,19 @@ MailerSend richiede:
 - `SMTP_USER` e `SMTP_PASSWORD` generati nella sezione SMTP del dominio verificato
 - `EMAIL_FROM=AI Act Readiness <info@fabiomoretti.com>`
 
-Il dominio mittente deve essere verificato in MailerSend prima di poter inviare da `info@fabiomoretti.com`. Il codice forza sempre `AI Act Readiness <info@fabiomoretti.com>` come mittente delle email, anche se una variabile ambiente diversa viene impostata per errore. L'email report viene inviata alla persona che compila il test e mette `morettifabio70@gmail.com` in copia nascosta, tranne quando il destinatario del report e gia lo stesso indirizzo. L'indirizzo del compilatore viene normalizzato lato server prima di salvataggio e invio. Se il provider rifiuta il messaggio con BCC, l'app ritenta l'invio al lead senza BCC e manda comunque una copia separata del report a `morettifabio70@gmail.com`.
+Il dominio mittente deve essere verificato in MailerSend prima di poter inviare da `info@fabiomoretti.com`. Il codice forza sempre `AI Act Readiness <info@fabiomoretti.com>` come mittente del report al compilatore. L'indirizzo inserito nel form viene normalizzato lato server prima di salvataggio e invio.
+
+### Sender SMTP
+
+La copia interna completa viene inviata separatamente a `morettifabio70@gmail.com` tramite Sender:
+
+- `SENDER_SMTP_HOST=smtp.sender.net`
+- `SENDER_SMTP_PORT=587`
+- `SENDER_SMTP_SECURE=false`, per usare TLS sulla porta 587
+- `SENDER_SMTP_USER` e `SENDER_SMTP_PASSWORD` generati nell'account Sender
+- `SENDER_EMAIL_FROM=AI Act Readiness <info@fabiomoretti.com>`
+
+I due invii sono indipendenti e partono in parallelo: un errore del provider usato per il compilatore non blocca la copia interna tramite Sender, e viceversa.
 
 ## Database
 
@@ -80,7 +98,7 @@ Il backend usa la service role key lato server. Non esporre mai `SUPABASE_SERVIC
 
 Oggetto lead: `Il tuo report AI Act Readiness e pronto`.
 
-Contiene saluto personalizzato, dati completi del compilatore, punteggio, categoria, sintesi, aree critiche, azioni consigliate, link Kit Base e link consulenza, piu disclaimer. La stessa email viene inviata in copia nascosta a `morettifabio70@gmail.com`. Se SMTP fallisce e `RESEND_API_KEY` e configurato, l'app tenta automaticamente il fallback via Resend.
+Contiene saluto personalizzato, dati completi del compilatore, punteggio, categoria, sintesi, aree critiche, azioni consigliate, link Kit Base e link consulenza, piu disclaimer. MailerSend invia il report all'indirizzo inserito nel form; Sender invia separatamente la copia completa a `morettifabio70@gmail.com`. Se l'SMTP del compilatore fallisce e `RESEND_API_KEY` e configurato, l'app tenta automaticamente il fallback via Resend.
 
 ## Analytics
 
@@ -101,7 +119,7 @@ Puoi intercettarli con GTM, Plausible, PostHog o altro provider.
 1. Importa il repository su Vercel.
 2. Imposta le variabili ambiente in Project Settings.
 3. Esegui lo schema SQL su Supabase.
-4. Configura il dominio mittente su MailerSend.
+4. Configura il dominio mittente su MailerSend e Sender.
 5. Deploy.
 
 ## Esempio test
