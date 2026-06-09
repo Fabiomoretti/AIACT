@@ -30,7 +30,6 @@ const initialLead: LeadForm = {
   email: "",
   company: "",
   role: "",
-  phone: "",
   privacyConsent: false,
   marketingConsent: false,
   contactRequested: false,
@@ -150,7 +149,6 @@ export function AssessmentApp() {
         email: lead.email.trim(),
         company: lead.company.trim(),
         role: lead.role.trim(),
-        phone: lead.phone?.trim(),
         answers,
         result,
         startedAt
@@ -385,10 +383,6 @@ export function AssessmentApp() {
                     <input id="role" className="form-field mt-1" value={lead.role} onChange={(event) => setLead({ ...lead, role: event.target.value })} />
                     <FieldError>{errors.role}</FieldError>
                   </div>
-                </div>
-                <div>
-                  <label className="label" htmlFor="phone">Telefono opzionale</label>
-                  <input id="phone" className="form-field mt-1" value={lead.phone} onChange={(event) => setLead({ ...lead, phone: event.target.value })} />
                 </div>
                 <label className="flex gap-3 text-sm leading-6">
                   <input

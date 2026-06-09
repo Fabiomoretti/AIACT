@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { calculateAssessment } from "@/lib/scoring";
 import { sendReportEmails } from "@/lib/email";
+import { syncMailerLiteSubscriber } from "@/lib/mailerlite";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { leadPayloadSchema } from "@/lib/validation";
 import type { LeadPayload } from "@/lib/types";
@@ -45,7 +46,6 @@ async function persistLead(payload: LeadPayload) {
       email: payload.email,
       company: payload.company,
       role: payload.role,
-      phone: payload.phone || null,
       privacy_consent: payload.privacyConsent,
       marketing_consent: payload.marketingConsent,
       contact_requested: payload.contactRequested,
@@ -108,14 +108,24 @@ export async function POST(request: Request) {
 
   try {
     const persistence = await persistLead(payload);
-    const email = await sendReportEmails(payload).catch((emailError) => {
-      console.error("Email delivery failed", emailError);
+    const [email, mailerlite] = await Promise.all([
+      sendReportEmails(payload).catch((emailError) => {
+        console.error("Email delivery failed", emailError);
 
-      return {
-        sent: false,
-        reason: emailError instanceof Error ? emailError.message : "Errore invio email"
-      };
-    });
+        return {
+          sent: false,
+          reason: emailError instanceof Error ? emailError.message : "Errore invio email"
+        };
+      }),
+      syncMailerLiteSubscriber(payload).catch((mailerliteError) => {
+        console.error("MailerLite sync failed", mailerliteError);
+
+        return {
+          synced: false,
+          reason: mailerliteError instanceof Error ? mailerliteError.message : "Errore sincronizzazione MailerLite"
+        };
+      })
+    ]);
 
     if (!email.sent) {
       console.error("Lead report email was not sent", email);
@@ -125,11 +135,16 @@ export async function POST(request: Request) {
       console.error("Sender BCC copy was not sent", email.ownerCopy);
     }
 
+    if (!mailerlite.synced) {
+      console.error("Lead was not synced to MailerLite", mailerlite);
+    }
+
     return NextResponse.json({
       ok: true,
       leadId: persistence.leadId,
       persisted: persistence.persisted,
       email,
+      mailerlite,
       result: serverResult
     });
   } catch (error) {

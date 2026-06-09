@@ -23,7 +23,6 @@ export const leadPayloadSchema = z.object({
   email: z.string().trim().email().max(160).transform((value) => value.toLowerCase()),
   company: z.string().trim().min(2).max(140),
   role: z.string().trim().min(2).max(120),
-  phone: z.string().trim().max(40).optional().or(z.literal("")),
   privacyConsent: z.literal(true),
   marketingConsent: z.boolean(),
   contactRequested: z.boolean(),

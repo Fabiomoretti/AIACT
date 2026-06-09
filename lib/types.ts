@@ -36,7 +36,6 @@ export type LeadPayload = {
   email: string;
   company: string;
   role: string;
-  phone?: string;
   privacyConsent: boolean;
   marketingConsent: boolean;
   contactRequested: boolean;
