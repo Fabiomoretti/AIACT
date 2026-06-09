@@ -65,7 +65,9 @@ Il report viene inviato all'indirizzo inserito nel form e la stessa email mette 
 
 Imposta `MAILERLITE_API_TOKEN` con un token API server-side. A ogni richiesta di report, il backend crea o aggiorna il contatto e lo inserisce nel gruppo `Report`, creato automaticamente se non esiste. `MAILERLITE_REPORT_GROUP_ID` e opzionale, ma evita una richiesta di ricerca del gruppo a ogni avvio serverless.
 
-MailerLite riceve solo nome, cognome, email, azienda/studio, ruolo, punteggio, consenso marketing, richiesta di ricontatto e data del test. Tutti i contatti vengono sincronizzati; usa il campo `Consenso marketing AI Act` per escludere dalle campagne chi non ha prestato il consenso.
+MailerLite riceve solo nome, cognome, email, azienda/studio, ruolo, punteggio, valore AI Act, consenso marketing, richiesta di ricontatto e data del test. Tutti i contatti vengono sincronizzati; usa il campo `Consenso marketing AI Act` per escludere dalle campagne chi non ha prestato il consenso.
+
+Il campo `Valore AI Act` viene impostato automaticamente su `Alto` per punteggi da 70 a 100, `Medio` per punteggi da 40 a 69 e `Basso` per punteggi inferiori a 40.
 
 ## Database
 

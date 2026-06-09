@@ -28,6 +28,7 @@ type CollectionResponse<T> = {
 const fieldDefinitions = [
   { name: "Ruolo AI Act", type: "text" },
   { name: "Punteggio AI Act", type: "number" },
+  { name: "Valore AI Act", type: "text" },
   { name: "Consenso marketing AI Act", type: "text" },
   { name: "Richiesta ricontatto AI Act", type: "text" },
   { name: "Data test AI Act", type: "date" }
@@ -172,6 +173,12 @@ function testDate() {
   }).format(new Date());
 }
 
+export function aiActValue(score: number) {
+  if (score >= 70) return "Alto";
+  if (score >= 40) return "Medio";
+  return "Basso";
+}
+
 export async function syncMailerLiteSubscriber(payload: LeadPayload) {
   if (!configured(process.env.MAILERLITE_API_TOKEN)) {
     return {
@@ -192,6 +199,7 @@ export async function syncMailerLiteSubscriber(payload: LeadPayload) {
         company: payload.company.trim(),
         [fieldKeys["Ruolo AI Act"]]: payload.role.trim(),
         [fieldKeys["Punteggio AI Act"]]: payload.result.score,
+        [fieldKeys["Valore AI Act"]]: aiActValue(payload.result.score),
         [fieldKeys["Consenso marketing AI Act"]]: payload.marketingConsent ? "Si" : "No",
         [fieldKeys["Richiesta ricontatto AI Act"]]: payload.contactRequested ? "Si" : "No",
         [fieldKeys["Data test AI Act"]]: testDate()
