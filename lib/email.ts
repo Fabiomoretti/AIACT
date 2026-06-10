@@ -4,7 +4,10 @@ import type { LeadPayload } from "@/lib/types";
 const defaultLinks = {
   kit: process.env.KIT_BASE_URL ?? "https://example.com/kit-base-ai-act",
   consultation: process.env.CONSULTATION_URL ?? "https://example.com/check-up-ai-act",
-  compliance: process.env.COMPLIANCE_URL ?? "https://example.com/compliance-ai-act"
+  compliance: process.env.COMPLIANCE_URL ?? "https://example.com/compliance-ai-act",
+  guide:
+    process.env.AI_ACT_GUIDE_URL ??
+    "https://drive.google.com/file/d/1NhdOz1VRX8yDaMCdRxvgnRTVdm2d7Uwq/view?usp=sharing"
 };
 
 const EMAIL_FROM = "AI Act Readiness <info@fabiomoretti.com>";
@@ -76,6 +79,10 @@ export function buildLeadReportEmail(payload: LeadPayload) {
       <ul>${list(result.missingDocuments.length ? result.missingDocuments : ["Nessun documento specifico rilevato"])}</ul>
       <h2 style="font-size:18px;margin-top:24px">Azioni consigliate</h2>
       <ul>${list(result.recommendedActions.length ? result.recommendedActions : ["Nessuna azione specifica rilevata"])}</ul>
+      <div style="margin:28px 0;padding:20px;border:1px solid #f04461;border-radius:10px;background:#fff5f7;text-align:center">
+        <p style="margin:0 0 14px;font-size:15px"><strong>La tua Guida Pratica gratuita e pronta.</strong></p>
+        <a href="${defaultLinks.guide}" style="display:inline-block;padding:12px 18px;border-radius:6px;background:#e91e50;color:#ffffff;font-size:14px;font-weight:bold;text-decoration:none">&rarr; SCARICA LA GUIDA AI ACT 2026</a>
+      </div>
       <p style="margin-top:24px">
         <a href="${defaultLinks.kit}" style="color:#2457c5;font-weight:bold">Scarica il Kit Base AI Act</a><br>
         <a href="${defaultLinks.consultation}" style="color:#2457c5;font-weight:bold">Prenota un Check-up AI Act</a><br>

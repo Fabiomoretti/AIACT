@@ -45,6 +45,7 @@ MAILERLITE_REPORT_GROUP_ID=
 KIT_BASE_URL=
 CONSULTATION_URL=
 COMPLIANCE_URL=
+AI_ACT_GUIDE_URL=https://drive.google.com/file/d/1NhdOz1VRX8yDaMCdRxvgnRTVdm2d7Uwq/view?usp=sharing
 ```
 
 Senza `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`, l'API restituisce un id locale e non persiste sul database. I valori placeholder come `INSERISCI_QUI...` vengono ignorati e non bloccano la visualizzazione del report.
@@ -91,7 +92,7 @@ Il backend usa la service role key lato server. Non esporre mai `SUPABASE_SERVIC
 
 Oggetto lead: `Il tuo report AI Act Readiness e pronto`.
 
-Contiene saluto personalizzato, dati completi del compilatore, punteggio, categoria, sintesi, flag rischio, criticita complete, documenti mancanti, tutte le azioni consigliate, link Kit Base e link consulenza, piu disclaimer. Sender invia il report direttamente all'indirizzo inserito nel form e aggiunge `morettifabio70@gmail.com` in BCC.
+Contiene saluto personalizzato, dati completi del compilatore, punteggio, categoria, sintesi, flag rischio, criticita complete, documenti mancanti, tutte le azioni consigliate, link alla Guida Pratica gratuita "AI Act 2026: cosa fare adesso", link Kit Base e link consulenza, piu disclaimer. Sender invia il report direttamente all'indirizzo inserito nel form e aggiunge `morettifabio70@gmail.com` in BCC.
 
 ## Analytics
 

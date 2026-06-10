@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, CheckCircle2, ClipboardList, FileSearch, GraduationCap, ShieldCheck } from "lucide-react";
+import { ArrowRight, BookOpenCheck, CheckCircle2, ClipboardList, FileSearch, GraduationCap, ShieldCheck } from "lucide-react";
 import { Button, Badge } from "@/components/ui";
 import { trackEvent } from "@/lib/analytics";
 
@@ -53,6 +53,12 @@ export function LandingPage() {
             <p className="mt-5 max-w-2xl text-lg leading-8 text-cream opacity-80">
               Rispondi a poche domande e ricevi un report gratuito con il tuo livello di rischio, le aree da sistemare e i prossimi passi consigliati.
             </p>
+            <div className="mt-4 flex max-w-2xl items-start gap-3 rounded-md border border-cream/15 bg-cream/10 px-4 py-3">
+              <BookOpenCheck className="mt-0.5 shrink-0 text-flame" size={20} aria-hidden />
+              <p className="text-sm font-semibold leading-6 text-cream">
+                In piu ricevi gratis la Guida Pratica &quot;AI Act 2026: cosa fare adesso&quot;.
+              </p>
+            </div>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button asChild onClick={() => trackEvent("assessment_started")}>
                 <Link href="/assessment">
@@ -106,7 +112,7 @@ export function LandingPage() {
           <div>
             <h2 className="text-2xl font-extrabold">Cosa ottieni dal test</h2>
             <p className="mt-3 max-w-xl leading-7 text-muted">
-              Hai gia fatto il primo passo: una fotografia iniziale della tua situazione, senza trasformare il tema AI Act in un blocco operativo.
+              Una fotografia iniziale della tua situazione, un piano d&apos;azione personalizzato e la Guida Pratica gratuita &quot;AI Act 2026: cosa fare adesso&quot;.
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
