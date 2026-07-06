@@ -31,6 +31,7 @@ Copia `.env.example` in `.env.local` e compila i valori necessari.
 
 ```bash
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_META_PIXEL_ID=
 SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
 SENDER_SMTP_HOST=smtp.sender.net
@@ -102,11 +103,21 @@ Gli eventi sono dispatchati come `CustomEvent` sul browser:
 - `assessment_step_completed`
 - `lead_form_viewed`
 - `lead_submitted`
+- `report_email_sent`
 - `report_viewed`
 - `cta_kit_clicked`
 - `cta_consultation_clicked`
 
 Puoi intercettarli con GTM, Plausible, PostHog o altro provider.
+
+### Meta Ads
+
+Imposta `NEXT_PUBLIC_META_PIXEL_ID` con l'id del Pixel/Dataset Meta. Quando la variabile e presente, l'app carica il Meta Pixel e invia:
+
+- `AIActTestCompleted`, evento custom, quando l'utente termina il questionario e vede il mini-esito.
+- `Lead`, evento standard Meta, solo dopo che l'API conferma l'invio del report via email.
+
+Gli eventi Meta includono solo dati non personali come punteggio, categoria e valore AI Act. Non vengono inviati nome, email, azienda o ruolo.
 
 ## Deploy su Vercel
 

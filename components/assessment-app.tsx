@@ -165,6 +165,13 @@ export function AssessmentApp() {
 
     setResult(data.result);
     setStage("report");
+    if (data.email?.sent) {
+      trackEvent("report_email_sent", {
+        score: data.result.score,
+        category: data.result.category,
+        riskLevel: data.result.riskLevel
+      });
+    }
     trackEvent("report_viewed", { score: data.result.score, category: data.result.category });
   }
 

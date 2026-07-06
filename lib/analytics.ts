@@ -3,6 +3,7 @@ export type AnalyticsEvent =
   | "assessment_step_completed"
   | "lead_form_viewed"
   | "lead_submitted"
+  | "report_email_sent"
   | "report_viewed"
   | "cta_kit_clicked"
   | "cta_consultation_clicked";

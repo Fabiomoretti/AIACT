@@ -1,4 +1,5 @@
 import "./globals.css";
+import { MetaPixelEvents } from "@/components/meta-pixel-events";
 
 export const metadata = {
   title: "AI Act Readiness Check",
@@ -13,7 +14,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="it" data-scroll-behavior="smooth">
-      <body>{children}</body>
+      <body>
+        <MetaPixelEvents />
+        {children}
+      </body>
     </html>
   );
 }
