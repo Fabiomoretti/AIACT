@@ -42,22 +42,40 @@ function scoreValue(score: unknown) {
   return "Basso";
 }
 
+function sendWhenReady(callback: (fbq: MetaFbq) => void, attempt = 0) {
+  if (typeof window === "undefined") return;
+
+  if (window.fbq) {
+    callback(window.fbq);
+    return;
+  }
+
+  if (attempt >= 6) return;
+
+  window.setTimeout(() => sendWhenReady(callback, attempt + 1), 350);
+}
+
 export function isMetaPixelConfigured() {
   return configured(META_PIXEL_ID);
 }
 
 export function trackMetaPageView() {
   if (!isMetaPixelConfigured()) return;
-  window.fbq?.("track", "PageView");
+  sendWhenReady((fbq) => fbq("track", "PageView"));
 }
 
 export function trackTestCompleted(payload?: MetaPayload) {
   if (!isMetaPixelConfigured()) return;
 
-  window.fbq?.("trackCustom", "AIActTestCompleted", {
+  const eventPayload = {
     content_name: "AI Act Readiness Check",
     lead_value: scoreValue(payload?.score),
     ...cleanPayload(payload)
+  };
+
+  sendWhenReady((fbq) => {
+    fbq("track", "CompleteRegistration", eventPayload);
+    fbq("trackCustom", "AIActTestCompleted", eventPayload);
   });
 }
 
@@ -70,6 +88,8 @@ export function trackReportLead(payload?: MetaPayload) {
     ...cleanPayload(payload)
   };
 
-  window.fbq?.("track", "Lead", eventPayload);
-  window.fbq?.("trackCustom", "AIActReportRequested", eventPayload);
+  sendWhenReady((fbq) => {
+    fbq("track", "Lead", eventPayload);
+    fbq("trackCustom", "AIActReportRequested", eventPayload);
+  });
 }
