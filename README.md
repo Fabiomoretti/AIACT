@@ -116,6 +116,7 @@ Il Pixel Meta predefinito e `4665704080374942`. Puoi sovrascriverlo impostando `
 
 - `AIActTestCompleted`, evento custom, quando l'utente termina il questionario e vede il mini-esito.
 - `Lead`, evento standard Meta, solo dopo che l'API conferma l'invio del report via email.
+- `AIActReportRequested`, evento custom di supporto, nello stesso momento di `Lead`.
 
 Gli eventi Meta includono solo dati non personali come punteggio, categoria e valore AI Act. Non vengono inviati nome, email, azienda o ruolo.
 

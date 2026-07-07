@@ -3,7 +3,7 @@
 const DEFAULT_META_PIXEL_ID = "4665704080374942";
 const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || DEFAULT_META_PIXEL_ID;
 
-type MetaPayload = Record<string, string | number | boolean | undefined>;
+type MetaPayload = Record<string, unknown>;
 type MetaFbq = {
   (...args: unknown[]): void;
   callMethod?: (...args: unknown[]) => void;
@@ -64,9 +64,12 @@ export function trackTestCompleted(payload?: MetaPayload) {
 export function trackReportLead(payload?: MetaPayload) {
   if (!isMetaPixelConfigured()) return;
 
-  window.fbq?.("track", "Lead", {
+  const eventPayload = {
     content_name: "AI Act Readiness Report",
     lead_value: scoreValue(payload?.score),
     ...cleanPayload(payload)
-  });
+  };
+
+  window.fbq?.("track", "Lead", eventPayload);
+  window.fbq?.("trackCustom", "AIActReportRequested", eventPayload);
 }
