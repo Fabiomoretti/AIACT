@@ -46,33 +46,6 @@ export function isMetaPixelConfigured() {
   return configured(META_PIXEL_ID);
 }
 
-export function initMetaPixel() {
-  if (typeof window === "undefined" || !isMetaPixelConfigured() || window.fbq?.loaded) return;
-
-  const fbq: MetaFbq = (...args: unknown[]) => {
-    if (fbq.callMethod) {
-      fbq.callMethod(...args);
-      return;
-    }
-
-    fbq.queue?.push(args);
-  };
-
-  window.fbq = fbq;
-  window._fbq = fbq;
-  fbq.push = fbq;
-  fbq.loaded = true;
-  fbq.version = "2.0";
-  fbq.queue = [];
-
-  const script = document.createElement("script");
-  script.async = true;
-  script.src = "https://connect.facebook.net/en_US/fbevents.js";
-  document.head.appendChild(script);
-
-  fbq("init", META_PIXEL_ID);
-}
-
 export function trackMetaPageView() {
   if (!isMetaPixelConfigured()) return;
   window.fbq?.("track", "PageView");

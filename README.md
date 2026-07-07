@@ -112,7 +112,7 @@ Puoi intercettarli con GTM, Plausible, PostHog o altro provider.
 
 ### Meta Ads
 
-Il Pixel Meta predefinito e `4665704080374942`. Puoi sovrascriverlo impostando `NEXT_PUBLIC_META_PIXEL_ID`. L'app carica il Meta Pixel, invia `PageView` e registra anche il fallback `noscript`.
+Il Pixel Meta predefinito e `4665704080374942`. Puoi sovrascriverlo impostando `NEXT_PUBLIC_META_PIXEL_ID`. L'app carica lo snippet ufficiale Meta Pixel, invia `PageView` e registra anche il fallback `noscript`.
 
 - `AIActTestCompleted`, evento custom, quando l'utente termina il questionario e vede il mini-esito.
 - `Lead`, evento standard Meta, solo dopo che l'API conferma l'invio del report via email.

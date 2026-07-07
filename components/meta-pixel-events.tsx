@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { initMetaPixel, isMetaPixelConfigured, trackMetaPageView, trackReportLead, trackTestCompleted } from "@/lib/meta-pixel";
+import { isMetaPixelConfigured, trackMetaPageView, trackReportLead, trackTestCompleted } from "@/lib/meta-pixel";
 
 type AnalyticsDetail = {
   event?: string;
@@ -11,11 +11,16 @@ type AnalyticsDetail = {
 
 export function MetaPixelEvents() {
   const pathname = usePathname();
+  const firstPageViewHandled = useRef(false);
 
   useEffect(() => {
     if (!isMetaPixelConfigured()) return;
 
-    initMetaPixel();
+    if (!firstPageViewHandled.current) {
+      firstPageViewHandled.current = true;
+      return;
+    }
+
     trackMetaPageView();
   }, [pathname]);
 
