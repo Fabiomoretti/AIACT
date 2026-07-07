@@ -107,7 +107,16 @@ export async function POST(request: Request) {
   };
 
   try {
-    const persistence = await persistLead(payload);
+    const persistence = await persistLead(payload).catch((persistenceError) => {
+      console.error("Lead persistence failed", persistenceError);
+
+      return {
+        leadId: `local_${Date.now()}`,
+        persisted: false,
+        reason: persistenceError instanceof Error ? persistenceError.message : "Errore salvataggio lead"
+      };
+    });
+
     const [email, mailerlite] = await Promise.all([
       sendReportEmails(payload).catch((emailError) => {
         console.error("Email delivery failed", emailError);
