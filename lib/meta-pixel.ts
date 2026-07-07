@@ -1,6 +1,7 @@
 "use client";
 
-const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+const DEFAULT_META_PIXEL_ID = "4665704080374942";
+const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || DEFAULT_META_PIXEL_ID;
 
 type MetaPayload = Record<string, string | number | boolean | undefined>;
 type MetaFbq = {
